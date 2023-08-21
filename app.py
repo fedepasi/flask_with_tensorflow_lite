@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template
-from inference import get_category, plot_category
+from inference import get_category, plot_category, tflite_detect_images
 from datetime import datetime
 
 app = Flask(__name__)
@@ -10,8 +10,10 @@ def rock_paper_scissor():
     # POST method to post the results file
         # Read file from upload
         img = request.files['file']
+        img_url = request.url
         # Get category of prediction
-        image_category = get_category(img)
+        #image_category = get_category(img)
+        image_category = tflite_detect_images(img_url)
         # Plot the category
         now = datetime.now()
         current_time = now.strftime("%H-%M-%S")

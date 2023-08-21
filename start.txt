@@ -1,0 +1,2 @@
+install venv $ python3 -m venv .venv
+start venv $ . .venv/bin/activate
