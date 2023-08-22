@@ -80,7 +80,6 @@ def get_category(img):
     
     return class_names[predicted_label]
 
-
 # def plot_category(img):
 def plot_category(img, current_time):
     """Plot the input image. Timestamp used to help Flask grab the correct image.
@@ -90,29 +89,53 @@ def plot_category(img, current_time):
         current_time: timestamp
     """
     # Read an image from a file into a numpy array
-    img = mpimg.imread(img)
-    # Remove the plotting ticks
-    plt.grid(False)
-    plt.xticks([])
-    plt.yticks([])
-    plt.imshow(img, cmap=plt.cm.binary)
-    # To make sure Flask grabs the correct image to plot
-    strFile = f'static/images/output_{current_time}.png'
-    if os.path.isfile(strFile):
-        os.remove(strFile)
-    # Save the image with the file name that result.html is using as its img src
-    plt.savefig(strFile)
+    img_new_url =f'static/images-v2/output_{current_time}.jpg';
+    img.save(img_new_url)
+    # img = mpimg.imread(img)
+    # # Remove the plotting ticks
+    # plt.grid(False)
+    # plt.xticks([])
+    # plt.yticks([])
+    # plt.imshow(img, cmap=plt.cm.binary)
+    # # To make sure Flask grabs the correct image to plot
+    # strFile = f'static/images/output_{current_time}.png'
+    # if os.path.isfile(strFile):
+    #     os.remove(strFile)
+    # # Save the image with the file name that result.html is using as its img src
+    # plt.savefig(strFile)
+    return img_new_url
 
+def substrF1(str,per):
+    str.replace("A325-10", "label_")
+    str.replace("A325-31", "label_")
+    str.replace("AMR23-14", "label_")
+    str.replace("AMR23-18", "label_")
+    str.replace("AT04-3", "label_")
+    str.replace("AT04-22", "label_")
+    str.replace("C43-24", "label_")
+    str.replace("C43-77", "label_")
+    str.replace("FW45-2", "label_")
+    str.replace("FW45-23", "label_")
+    str.replace("MCL60-4", "label_")
+    str.replace("MCL60-81", "label_")
+    str.replace("RB19-1", "label_")
+    str.replace("RB19-11", "label_")
+    str.replace("SF23-16", "label_")
+    str.replace("SF23-55", "label_")
+    str.replace("VF23-20", "label_")
+    str.replace("VF23-27", "label_")
+    str.replace("W14-44", "label_")
+    str.replace("W14-63", "label_")
+    str.replace("SafetyCar-Aston", "label_")
+    str.replace("AT04-21", "label_")
+    str.replace("RB-18-1", "label_")
+    return str
 
-
-def tflite_detect_images(imgurl, min_conf=0.5, savepath='static/txt_results', txt_only=True):
-    print('impath1')
-    #print(imgpath)
-    imgpath = 'static/test_images'
-    # Grab filenames of all images in test folder
-    images = glob.glob(imgpath + '/*.jpg') + glob.glob(imgpath + '/*.JPG') + glob.glob(imgpath + '/*.png') + glob.glob(imgpath + '/*.bmp')
-    print('images')
-    print(images)
+def tflite_detect_images(imgurl, min_conf=0.5, savepath='static/txt_results'):
+    # # Grab filenames of all images in test folder
+    # images = glob.glob(imgpath + '/*.jpg') + glob.glob(imgpath + '/*.JPG') + glob.glob(imgpath + '/*.png') + glob.glob(imgpath + '/*.bmp')
+    # print('images')
+    # print(images)
     modelpath = 'static/model/f1_2023_detect_lite.tflite'
     lblpath = 'static/model/labelmap.txt'
 
@@ -138,7 +161,6 @@ def tflite_detect_images(imgurl, min_conf=0.5, savepath='static/txt_results', tx
     # Loop over every image and perform detection
     #for image_path in images:
     print('image_path2')
-    print(images[0])
     print(imgurl)
     # Load image and resize to expected shape [1xHxWx3]
     image = cv2.imread(imgurl)
@@ -173,7 +195,7 @@ def tflite_detect_images(imgurl, min_conf=0.5, savepath='static/txt_results', tx
             ymax = int(min(imH,(boxes[i][2] * imH)))
             xmax = int(min(imW,(boxes[i][3] * imW)))
 
-            cv2.rectangle(image, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+            cv2.rectangle(image, (xmin,ymin), (xmax,ymax), (255, 255, 255), 2) #blue (179, 105, 0)
 
             # Draw label
             object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
@@ -187,27 +209,35 @@ def tflite_detect_images(imgurl, min_conf=0.5, savepath='static/txt_results', tx
 
 
     # All the results have been drawn on the image, now display the image
-    if txt_only == False: # "text_only" controls whether we want to display the image results or just save them in .txt files
-        image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
-        plt.figure(figsize=(12,16))
-        plt.imshow(image)
-        plt.show()
-
-    # Save detection results in .txt files (for calculating mAP)
-    elif txt_only == True:
-        # Get filenames and paths
-        image_fn = os.path.basename(images[0])
-        base_fn, ext = os.path.splitext(image_fn)
-        txt_result_fn = base_fn +'.txt'
-        txt_savepath = os.path.join(savepath, txt_result_fn)
+    image = cv2.cvtColor(image,cv2.COLOR_BGR2RGB)
+    plt.figure(figsize=(12,16))
+    plt.imshow(image)
+    # Remove the plotting ticks
+    plt.grid(False)
+    plt.xticks([])
+    plt.yticks([])
+    #plt.show()
+    # Salva l'immagine su disco
+    # Imposta i margini del plot in modo che non ci sia spazio bianco intorno all'immagine
+    plt.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    saveLabledUrl ='static/images-with-label/'+os.path.basename(imgurl)
+    saveLabledUrl = saveLabledUrl.replace("output_", "label_")
+    plt.savefig(saveLabledUrl, bbox_inches='tight', pad_inches=0)
+    # Get filenames and paths
+    image_fn = os.path.basename(imgurl)
+    base_fn, ext = os.path.splitext(image_fn)
+    txt_result_fn = base_fn +'.txt'
+    txt_savepath = os.path.join(savepath, txt_result_fn)
 
     # Write results to text file
     # (Using format defined by https://github.com/Cartucho/mAP, which will make it easy to calculate mAP)
-    txt_result_string = '';
+    txt_result_string = []
+    percentage = []
     with open(txt_savepath,'w') as f:
         for detection in detections:
-            txt_result_string = detection[0]
+            txt_result_string.append(detection[0])
+            percentage.append(round(detection[1]*100))
             f.write('%s %.4f %d %d %d %d\n' % (detection[0], detection[1], detection[2], detection[3], detection[4], detection[5]))
 
-    return txt_result_string
+    return txt_result_string,percentage, saveLabledUrl
 

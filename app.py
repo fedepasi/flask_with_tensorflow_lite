@@ -5,23 +5,32 @@ from datetime import datetime
 app = Flask(__name__)
 
 @app.route('/', methods=['GET', 'POST'])
-def rock_paper_scissor():
+def index():
     if request.method == 'POST':
     # POST method to post the results file
         # Read file from upload
         img = request.files['file']
-        img_url = request.url
+        print('img-obj')
+        print(img)
         # Get category of prediction
         #image_category = get_category(img)
-        image_category = tflite_detect_images(img_url)
         # Plot the category
         now = datetime.now()
         current_time = now.strftime("%H-%M-%S")
-        plot_category(img, current_time)
+        img_url = plot_category(img, current_time)
+        image_category,percentage, saveLabledUrl = tflite_detect_images(img_url)
+        showLabel = True
+        if(showLabel == True):
+            img_url = saveLabledUrl
         # Render the result template
-        return render_template('result.html', category=image_category, current_time=current_time)
+        return render_template('result.html', len = len(image_category), result=image_category, percentage=percentage, img_url=img_url)
     # For GET requests, load the index file
     return render_template('index.html')
+
+@app.route('/reload')
+def reload_page():
+    # Reindirizza l'utente alla stessa pagina ('index' nel nostro caso)
+    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
